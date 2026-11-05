@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}My account{% endblock %}
+{% block content %}
+<h1>My account</h1>
+
+<section class="card">
+  <h2>Subscription</h2>
+  {% if subscription %}
+    <p>{{ subscription.plan.name }} · {{ subscription.plan.video_quality }} ·
+       up to {{ subscription.plan.max_screens }} screen(s)</p>
+    <p class="muted">Active since {{ subscription.started_on }}</p>
+  {% else %}
+    <p>No active plan. <a href="{{ url_for('account.plans') }}">Choose one</a>.</p>
+  {% endif %}
+  <a href="{{ url_for('account.billing') }}">Billing history →</a>
+</section>
+
+<section class="card">
+  <h2>New notifications</h2>
+  {% for n in notifications %}
+    <p>{{ n.message }} <span class="muted">{{ n.created_at.strftime('%d %b %H:%M') if n.created_at else '' }}</span></p>
+  {% else %}<p class="muted">Nothing new.</p>{% endfor %}
+</section>
+
+<section class="card">
+  <h2>Recently watched</h2>
+  <ul>
+    {% for h in history %}
+      <li><a href="{{ url_for('catalog.movie_detail', movie_id=h.movie.id) }}">{{ h.movie.title }}</a>
+        · {{ h.progress_seconds // 60 }} min {% if h.completed %}(completed){% endif %}</li>
+    {% else %}<li class="muted">No history yet.</li>{% endfor %}
+  </ul>
+</section>
+{% endblock %}

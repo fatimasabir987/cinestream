@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}{{ movie.title }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <img class="poster" src="{{ movie.poster_url }}" alt="Poster of {{ movie.title }}">
+  <div>
+    <h1>{{ movie.title }} <span class="muted">({{ movie.release_year }})</span></h1>
+    <p class="muted">
+      {{ movie.runtime_minutes or '?' }} min ·
+      {{ movie.language.name if movie.language else 'Unknown language' }} ·
+      {{ movie.content_rating.code if movie.content_rating else 'NR' }}
+      {% if movie.studio %}· {{ movie.studio.name }}{% endif %}
+    </p>
+    <p>{% for g in movie.genres %}<span class="tag">{{ g.name }}</span>{% endfor %}</p>
+    <p><strong>Average score:</strong>
+      {% if movie.average_score %}{{ movie.average_score }} / 10{% else %}no reviews yet{% endif %}</p>
+    <p>{{ movie.synopsis or '' }}</p>
+    {% if movie.franchise %}<p class="muted">Part of the {{ movie.franchise.name }} franchise.</p>{% endif %}
+
+    {% if current_user %}
+      <form method="post" action="{{ url_for('account.toggle_favorite', movie_id=movie.id) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn ghost">{{ 'Remove from favourites' if favorited else 'Add to favourites' }}</button>
+      </form>
+      {% for wl in current_user.watchlists %}
+        <form method="post" action="{{ url_for('account.watchlist_add', watchlist_id=wl.id, movie_id=movie.id) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn ghost">+ {{ wl.name }}</button>
+        </form>
+      {% endfor %}
+      <form method="post" action="{{ url_for('account.record_progress', movie_id=movie.id) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="seconds" value="600">
+        <button class="btn ghost">Log 10 min watched</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+
+<section class="card">
+  <h2>Cast &amp; crew</h2>
+  <ul class="credits">
+    {% for c in movie.credits %}
+      <li><a href="{{ url_for('catalog.person_detail', person_id=c.person.id) }}">{{ c.person.full_name }}</a>
+        <span class="muted">{{ c.credit_type.name }}{% if c.character_name %} as {{ c.character_name }}{% endif %}</span></li>
+    {% else %}<li class="muted">No credits yet.</li>{% endfor %}
+  </ul>
+</section>
+
+<section class="card">
+  <h2>Trailers &amp; subtitles</h2>
+  {% for t in movie.trailers %}
+    <p><a href="{{ t.url }}" target="_blank" rel="noopener">{{ t.title }}</a>
+       · {{ (t.duration_seconds or 0) // 60 }} min</p>
+  {% else %}<p class="muted">No trailers.</p>{% endfor %}
+  <p class="muted">Subtitles:
+    {% for s in movie.subtitles %}{{ s.language.name }}{% if s.is_forced %} (forced){% endif %}{% if not loop.last %}, {% endif %}{% else %}none{% endfor %}
+  </p>
+</section>
+
+<section class="card">
+  <h2>Awards</h2>
+  <ul>
+    {% for a in movie.awards %}
+      <li>{{ a.award.name }} {{ a.year }} – {{ a.category }} {% if a.won %}(won){% else %}(nominated){% endif %}</li>
+    {% else %}<li class="muted">None listed.</li>{% endfor %}
+  </ul>
+</section>
+
+<section id="reviews">
+  <h2>Reviews</h2>
+  {% if current_user %}
+    <form method="post" action="{{ url_for('catalog.submit_review', movie_id=movie.id) }}" class="card">
+      {{ review_form.hidden_tag() }}
+      {{ render_field(review_form.score) }}
+      {{ render_field(review_form.body) }}
+      <button class="btn">{{ 'Update your review' if my_review else 'Post review' }}</button>
+    </form>
+  {% else %}
+    <p><a href="{{ url_for('auth.login', next=request.path) }}">Log in</a> to review this movie.</p>
+  {% endif %}
+
+  {% for r in reviews %}
+    <article class="card" id="review-{{ r.id }}">
+      <header><strong>{{ r.user.username }}</strong> · {{ r.score }}/10 ·
+        <span class="muted">{{ r.created_at.strftime('%d %b %Y') if r.created_at else '' }}</span></header>
+      <p>{{ r.body or '' }}</p>
+      <p class="muted">Helpful votes: {{ r.votes|selectattr('is_helpful')|list|length }}</p>
+
+      {% if current_user and current_user.id != r.user_id %}
+        <form method="post" action="{{ url_for('catalog.vote_review', review_id=r.id) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button name="helpful" value="1" class="btn ghost">Helpful</button>
+          <button name="helpful" value="0" class="btn ghost">Not helpful</button>
+        </form>
+      {% endif %}
+
+      {% for c in r.comments %}
+        <p class="comment"><strong>{{ c.user.username }}:</strong> {{ c.body }}</p>
+      {% endfor %}
+
+      {% if current_user %}
+        <form method="post" action="{{ url_for('catalog.add_comment', review_id=r.id) }}">
+          {{ comment_form.hidden_tag() }}
+          <input name="body" placeholder="Add a comment" maxlength="500" required>
+          <button class="btn ghost">Comment</button>
+        </form>
+      {% endif %}
+    </article>
+  {% else %}
+    <p class="muted">No reviews yet. Be the first.</p>
+  {% endfor %}
+</section>
+{% endblock %}

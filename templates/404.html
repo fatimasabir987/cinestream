@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Not found{% endblock %}
+{% block content %}
+<h1>404 - Page not found</h1>
+<p class="muted">That page does not exist. <a href="{{ url_for('catalog.home') }}">Back to home</a>.</p>
+{% endblock %}

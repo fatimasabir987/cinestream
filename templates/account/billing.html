@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Billing{% endblock %}
+{% block content %}
+<h1>Billing</h1>
+<section class="card">
+  {% if subscription %}
+    <p>Active plan: <strong>{{ subscription.plan.name }}</strong> since {{ subscription.started_on }}.</p>
+    <form method="post" action="{{ url_for('account.cancel_subscription') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn ghost danger">Cancel subscription</button>
+    </form>
+  {% else %}
+    <p>No active subscription.</p>
+  {% endif %}
+  <p class="muted">Saved payment methods:
+    {% for pm in methods %}{{ pm.provider }} ••{{ pm.last4 }}{% if not loop.last %}, {% endif %}{% else %}none{% endfor %}
+  </p>
+</section>
+
+<h2>Invoices</h2>
+<table>
+  <thead><tr><th>Number</th><th>Issued</th><th>Status</th><th>Total</th><th>Lines</th></tr></thead>
+  <tbody>
+    {% for inv in invoices %}
+      <tr>
+        <td>{{ inv.number }}</td>
+        <td>{{ inv.issued_on }}</td>
+        <td>{{ inv.status }}</td>
+        <td>${{ '%.2f' % inv.total }}</td>
+        <td>{% for line in inv.lines %}{{ line.description }} (${{ '%.2f' % line.unit_price }}){% if not loop.last %}; {% endif %}{% endfor %}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5">No invoices yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

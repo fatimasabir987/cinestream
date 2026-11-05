@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "_macros.html" import movie_card %}
+{% block content %}
+<section class="hero-banner">
+  <h1>Stream stories from every corner of the cinema map.</h1>
+  <p class="muted">Browse the catalog, review films, and build watchlists.</p>
+  <a class="btn" href="{{ url_for('catalog.movie_list') }}">Browse movies</a>
+</section>
+<h2>Latest releases</h2>
+<div class="grid">
+  {% for movie in latest %}{{ movie_card(movie) }}{% else %}<p class="muted">No titles yet.</p>{% endfor %}
+</div>
+<h2>Genres</h2>
+<p>{% for g in genres %}<a class="tag" href="{{ url_for('catalog.movie_list', genre=g.id) }}">{{ g.name }}</a>{% endfor %}</p>
+{% endblock %}

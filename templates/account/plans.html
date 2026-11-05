@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Plans{% endblock %}
+{% block content %}
+<h1>Plans</h1>
+<div class="grid">
+  {% for p in plans %}
+    <div class="card">
+      <h2>{{ p.name }}</h2>
+      <p class="price">${{ '%.2f' % p.monthly_price }} <span class="muted">/ month</span></p>
+      <ul>
+        <li>{{ p.video_quality }} streaming</li>
+        <li>{{ p.max_screens }} screen(s)</li>
+        <li>{{ 'Ad-free' if p.ads_free else 'Includes ads' }}</li>
+      </ul>
+      {% if current_user %}
+        <form method="post" action="{{ url_for('account.subscribe', plan_id=p.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input name="coupon" placeholder="Coupon code (optional)" maxlength="30">
+          <button class="btn">Subscribe</button>
+        </form>
+      {% else %}
+        <p><a href="{{ url_for('auth.login') }}">Log in</a> to subscribe.</p>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

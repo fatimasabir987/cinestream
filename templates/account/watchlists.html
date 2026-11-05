@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}Watchlists{% endblock %}
+{% block content %}
+<h1>Watchlists</h1>
+<form method="post" class="card narrow">
+  {{ form.hidden_tag() }}
+  {{ render_field(form.name) }}
+  {{ render_field(form.is_public) }}
+  <button class="btn">Create watchlist</button>
+</form>
+
+{% for wl in current_user.watchlists %}
+  <section class="card">
+    <h2>{{ wl.name }} {% if wl.is_public %}<span class="tag">public</span>{% endif %}</h2>
+    <ul>
+      {% for item in wl.items %}
+        <li><a href="{{ url_for('catalog.movie_detail', movie_id=item.movie.id) }}">{{ item.movie.title }}</a>
+          {% if item.note %}<span class="muted">– {{ item.note }}</span>{% endif %}
+          <form method="post" action="{{ url_for('account.watchlist_remove', item_id=item.id) }}" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="linkish danger">remove</button>
+          </form></li>
+      {% else %}<li class="muted">Empty. Add movies from their pages.</li>{% endfor %}
+    </ul>
+  </section>
+{% else %}
+  <p class="muted">No watchlists yet.</p>
+{% endfor %}
+{% endblock %}

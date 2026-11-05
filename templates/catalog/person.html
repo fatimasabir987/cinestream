@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ person.full_name }}{% endblock %}
+{% block content %}
+<h1>{{ person.full_name }}</h1>
+<p class="muted">
+  {{ person.country.name if person.country else '' }}
+  {% if person.birth_date %}· born {{ person.birth_date }}{% endif %}
+</p>
+<p>{{ person.biography or '' }}</p>
+<p>{% for pp in person.professions %}<span class="tag">{{ pp.profession.name }}</span>{% endfor %}</p>
+
+<h2>Filmography</h2>
+<ul>
+  {% for c in person.credits %}
+    <li><a href="{{ url_for('catalog.movie_detail', movie_id=c.movie.id) }}">{{ c.movie.title }}</a>
+      ({{ c.movie.release_year }}) · {{ c.credit_type.name }}{% if c.character_name %} as {{ c.character_name }}{% endif %}</li>
+  {% else %}<li class="muted">No credits yet.</li>{% endfor %}
+</ul>
+{% endblock %}

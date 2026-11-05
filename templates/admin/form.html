@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}Edit {{ model.__name__ }}{% endblock %}
+{% block content %}
+<h1>{{ 'Edit' if obj else 'New' }} {{ model.__name__ }}</h1>
+<form method="post" class="card narrow" style="max-width:640px">
+  {{ form.hidden_tag() }}
+  {% for field in form %}
+    {% if field.name != 'csrf_token' %}{{ render_field(field) }}{% endif %}
+  {% endfor %}
+  <button class="btn" type="submit">Save</button>
+  <a href="{{ url_for('admin.list_rows', slug=slug) }}">Cancel</a>
+</form>
+{% endblock %}

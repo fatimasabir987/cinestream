@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ slug }} · Admin{% endblock %}
+{% block content %}
+<h1>{{ slug }} <span class="muted">({{ pagination.total }} rows)</span></h1>
+<p>
+  <a class="btn" href="{{ url_for('admin.create_row', slug=slug) }}">+ New {{ model.__name__ }}</a>
+  <a href="{{ url_for('admin.dashboard') }}">← All tables</a>
+</p>
+<table>
+  <thead><tr><th>ID</th>{% for c in columns %}<th>{{ c }}</th>{% endfor %}<th>Status</th><th>Deleted</th><th></th></tr></thead>
+  <tbody>
+    {% for row, values in rows %}
+      <tr{% if row.is_deleted %} class="muted"{% endif %}>
+        <td>{{ row.id }}</td>
+        {% for v in values %}<td>{{ v if v is not none else '-' }}</td>{% endfor %}
+        <td>{{ row.status }}</td>
+        <td>{% if row.is_deleted %}yes{% if row.deleted_at %} · {{ row.deleted_at.strftime('%d %b %H:%M') }}{% endif %}{% else %}no{% endif %}</td>
+        <td class="actions">
+          {% if not row.is_deleted %}
+            <a href="{{ url_for('admin.edit_row', slug=slug, row_id=row.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('admin.delete_row', slug=slug, row_id=row.id) }}"
+                  class="inline" onsubmit="return confirm('Soft-delete this row?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="linkish danger">Delete</button>
+            </form>
+          {% else %}
+            <form method="post" action="{{ url_for('admin.restore_row', slug=slug, row_id=row.id) }}" class="inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="linkish">Restore</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="99">No rows.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<nav class="pager">
+  {% if pagination.has_prev %}<a href="{{ url_for('admin.list_rows', slug=slug, page=pagination.prev_num) }}">← Prev</a>{% endif %}
+  {% if pagination.has_next %}<a href="{{ url_for('admin.list_rows', slug=slug, page=pagination.next_num) }}">Next →</a>{% endif %}
+</nav>
+{% endblock %}

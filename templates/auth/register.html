@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}Sign up{% endblock %}
+{% block content %}
+<h1>Create account</h1>
+<form method="post" class="card narrow">
+  {{ form.hidden_tag() }}
+  {{ render_field(form.username) }}
+  {{ render_field(form.email) }}
+  {{ render_field(form.password) }}
+  {{ render_field(form.confirm) }}
+  <button class="btn" type="submit">Sign up</button>
+</form>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% macro render_field(field) -%}
+<div class="field{% if field.errors %} has-error{% endif %}">
+  {{ field.label }}
+  {{ field(class_="input") }}
+  {% for error in field.errors %}<span class="error">{{ error }}</span>{% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro movie_card(movie) -%}
+<a class="movie card" href="{{ url_for('catalog.movie_detail', movie_id=movie.id) }}">
+  <img src="{{ movie.poster_url }}" alt="Poster of {{ movie.title }}" loading="lazy">
+  <h3>{{ movie.title }}</h3>
+  <p class="muted">{{ movie.release_year }} · {{ movie.content_rating.code if movie.content_rating else 'NR' }}</p>
+</a>
+{%- endmacro %}

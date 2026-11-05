@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<h1>Admin console <span class="muted">({{ counts|length }} tables)</span></h1>
+<div class="grid">
+  {% for slug, n in counts %}
+    <a class="card" href="{{ url_for('admin.list_rows', slug=slug) }}">
+      <h3>{{ slug }}</h3><p class="muted">{{ n }} rows</p>
+    </a>
+  {% endfor %}
+</div>
+{% endblock %}
